@@ -96,6 +96,12 @@ function addItemToShoppingList(itemName) {
   STORE.items.push({id: cuid(), name: itemName, checked: false});
 }
 
+function getItemIndexFromElement(item) {
+  return $(item)
+    .closest('.js-item-index-element')
+    .attr('data-item-index');
+}
+
 function toggleCheckedForListItem(itemId) {
   console.log('Toggling checked property for item at index ' + itemId);
   const item = getStoreItemById(itemId);
@@ -108,23 +114,18 @@ function toggleEditingForListItem(itemId){
   item.editing = !item.editing;
 }
 
-function deleteStoreItemById(itemId){
-  STORE.items = STORE.items.filter(item => item.id !== itemId);
-}
-
-function getItemIndexFromElement(item) {
-  return $(item)
-    .closest('.js-item-index-element')
-    .attr('data-item-index');
+function setItemName(item, newName){
+  item.name = newName;
 }
 
 function getStoreItemById(itemId){
   return STORE.items.find(item => item.id === itemId);
 }
 
-function setStoreItemName(itemId, newName){
-  
+function deleteStoreItemById(itemId){
+  STORE.items = STORE.items.filter(item => item.id !== itemId);
 }
+
 
 
 ////Event handlers
@@ -174,16 +175,17 @@ function handleEditItemClicked(){
   });
 }
 
-function handleConfirmEditItemClicked(){
+function handleConfirmEditItemNameClicked(){
   $('.js-shopping-list').on('submit', '.js-item-name-edit-form', function(event) {
     event.preventDefault();
     console.log('`handleConfirmEditItemClicked` ran');
 
     const updatedItemName = $('.js-item-name-edit-entry').val();
     const itemId= getItemIndexFromElement(event.currentTarget);
+    const item = getStoreItemById(itemId);
 
     toggleEditingForListItem(itemId);
-    setStoreItemName(itemId, updatedItemName);
+    setItemName(item, updatedItemName);
     renderShoppingList();
   });
 }
@@ -212,6 +214,7 @@ function handleShoppingList() {
   handleItemCheckClicked();
   handleEditItemClicked();
   handleDeleteItemClicked();
+  handleConfirmEditItemNameClicked();
 }
 
 // when the page loads, call `handleShoppingList`
