@@ -69,6 +69,10 @@ function setStoreFilter(filter){
   STORE.filter = filter;
 }
 
+function setStoreHideChecked(val){
+  STORE.hideChecked = val;
+}
+
 
 ////Single list item manipulation
 
@@ -126,8 +130,8 @@ function handleFilterItems(){
 
 function handleHideChecked(){
   $('#js-shopping-list-add-form').on('click', '.js-hide-checked', function(e){
-    $('.js-hide-checked');
-    
+    const isChecked = $('.js-hide-checked').is(':checked');
+    setStoreHideChecked(isChecked);
     renderShoppingList();
   });
 }
