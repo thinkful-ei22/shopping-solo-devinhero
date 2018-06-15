@@ -34,7 +34,7 @@ function generateShoppingItemsString(shoppingList) {
 
 function filterItemsArrayByTerm(items, filter){
   if(filter){
-    return items.filter(item => item.name.indexOf(filter) !== -1);
+    return items.filter(item => item.name.toLowerCase().indexOf(filter) !== -1);
   }else{
     return items;
   }
@@ -81,7 +81,7 @@ function generateItemSpanString(item){
 }
 
 function setStoreFilter(filter){
-  STORE.filter = filter;
+  STORE.filter = filter.toLowerCase();
 }
 
 function setStoreHideChecked(val){
