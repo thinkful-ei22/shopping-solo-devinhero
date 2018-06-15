@@ -1,17 +1,23 @@
+/* global cuid */
 'use strict';
 
-const STORE = [
-  {name: "apples", checked: false},
-  {name: "oranges", checked: false},
-  {name: "milk", checked: true},
-  {name: "bread", checked: false}
-];
+const STORE = {
+  items: [
+    {id: cuid(), name: 'apples', checked: false},
+    {id: cuid(), name: 'oranges', checked: false},
+    {id: cuid(), name: 'milk', checked: true},
+    {id: cuid(), name: 'bread', checked: false}
+  ],
+};
 
+function getStoreItemById(itemId){
+  return STORE.items.find(item => item.id === itemId);
+}
 
-function generateItemElement(item, itemIndex, template) {
+function generateItemElement(item) {
   return `
-    <li class="js-item-index-element" data-item-index="${itemIndex}">
-      <span class="shopping-item js-shopping-item ${item.checked ? "shopping-item__checked" : ''}">${item.name}</span>
+    <li class='js-item-index-element' data-item-index="${item.id}">
+      <span class="shopping-item js-shopping-item ${item.checked ? 'shopping-item__checked' : ''}">${item.name}</span>
       <div class="shopping-item-controls">
         <button class="shopping-item-toggle js-item-toggle">
             <span class="button-label">check</span>
@@ -25,18 +31,18 @@ function generateItemElement(item, itemIndex, template) {
 
 
 function generateShoppingItemsString(shoppingList) {
-  console.log("Generating shopping list element");
+  console.log('Generating shopping list element');
 
-  const items = shoppingList.map((item, index) => generateItemElement(item, index));
+  const items = shoppingList.map((item) => generateItemElement(item));
   
-  return items.join("");
+  return items.join('');
 }
 
 
 function renderShoppingList() {
   // render the shopping list in the DOM
   console.log('`renderShoppingList` ran');
-  const shoppingListItemsString = generateShoppingItemsString(STORE);
+  const shoppingListItemsString = generateShoppingItemsString(STORE.items);
 
   // insert that HTML into the DOM
   $('.js-shopping-list').html(shoppingListItemsString);
@@ -45,7 +51,7 @@ function renderShoppingList() {
 
 function addItemToShoppingList(itemName) {
   console.log(`Adding "${itemName}" to shopping list`);
-  STORE.push({name: itemName, checked: false});
+  STORE.items.push({id: cuid(), name: itemName, checked: false});
 }
 
 function handleNewItemSubmit() {
@@ -59,24 +65,25 @@ function handleNewItemSubmit() {
   });
 }
 
-function toggleCheckedForListItem(itemIndex) {
-  console.log("Toggling checked property for item at index " + itemIndex);
-  STORE[itemIndex].checked = !STORE[itemIndex].checked;
+function toggleCheckedForListItem(itemId) {
+  console.log('Toggling checked property for item at index ' + itemId);
+  const item = getStoreItemById(itemId);
+  console.log('Item found for checked: ' + item);
+  item.checked = !item.checked;
 }
 
 
 function getItemIndexFromElement(item) {
-  const itemIndexString = $(item)
+  return $(item)
     .closest('.js-item-index-element')
     .attr('data-item-index');
-  return parseInt(itemIndexString, 10);
 }
 
 function handleItemCheckClicked() {
-  $('.js-shopping-list').on('click', `.js-item-toggle`, event => {
+  $('.js-shopping-list').on('click', '.js-item-toggle', event => {
     console.log('`handleItemCheckClicked` ran');
-    const itemIndex = getItemIndexFromElement(event.currentTarget);
-    toggleCheckedForListItem(itemIndex);
+    const itemId = getItemIndexFromElement(event.currentTarget);
+    toggleCheckedForListItem(itemId);
     renderShoppingList();
   });
 }
@@ -84,10 +91,14 @@ function handleItemCheckClicked() {
 
 function handleDeleteItemClicked() {
   $('.shopping-list').on('click', '.shopping-item-delete', function(e){
-    const idx = $(this).closest('li').attr('data-item-index');
-    STORE.splice(idx, 1);
+    const itemId = getItemIndexFromElement(this);
+    deleteItemById(itemId);
     renderShoppingList();
   });
+}
+
+function deleteItemById(itemId){
+  STORE.items = STORE.items.filter(item => item.id !== itemId);
 }
 
 // this function will be our callback when the page loads. it's responsible for
