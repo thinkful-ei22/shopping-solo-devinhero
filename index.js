@@ -3,10 +3,9 @@
 
 const STORE = {
   items: [
-    {id: cuid(), name: 'apples', checked: false},
-    {id: cuid(), name: 'oranges', checked: false},
-    {id: cuid(), name: 'milk', checked: true},
-    {id: cuid(), name: 'bread', checked: false}
+    {id: cuid(), name: 'Praisin Bran', checked: false, editing: false},
+    {id: cuid(), name: 'milk', checked: true, editing: false},
+    {id: cuid(), name: 'bread', checked: false, editing: false}
   ],
   filter: '',
   hideChecked: false
@@ -51,18 +50,34 @@ function filterItemsArrayByChecked(items){
 
 
 function generateItemElement(item) {
+  
   return `
     <li class='js-item-index-element' data-item-index="${item.id}">
-      <span class="shopping-item js-shopping-item ${item.checked ? 'shopping-item__checked' : ''}">${item.name}</span>
+      ${item.editing ? generateItemEditFieldString(item) : generateItemSpanString(item)}
       <div class="shopping-item-controls">
         <button class="shopping-item-toggle js-item-toggle">
             <span class="button-label">check</span>
+        </button>
+        <button class="shopping-item-edit js-item-edit">
+            <span class="button-label">edit</span>
         </button>
         <button class="shopping-item-delete js-item-delete">
             <span class="button-label">delete</span>
         </button>
       </div>
     </li>`;
+}
+
+function generateItemEditFieldString(item){
+  return `<form class="js-item-name-edit-form">
+            <input type="text" name="item-name-edit-entry" class="js-item-name-edit-entry" placeholder="${item.name}">
+            <button type="submit">Confirm name</button>
+          </form>`;
+}
+
+function generateItemSpanString(item){
+  return `<span class="shopping-item js-shopping-item ${item.checked ?
+                   'shopping-item__checked' : ''}">${item.name}</span>`;
 }
 
 function setStoreFilter(filter){
@@ -88,8 +103,9 @@ function toggleCheckedForListItem(itemId) {
   item.checked = !item.checked;
 }
 
-function editNameForListItem(itemId){
-  //TODO
+function toggleEditingForListItem(itemId){
+  const item = getStoreItemById(itemId);
+  item.editing = !item.editing;
 }
 
 function deleteStoreItemById(itemId){
@@ -104,6 +120,10 @@ function getItemIndexFromElement(item) {
 
 function getStoreItemById(itemId){
   return STORE.items.find(item => item.id === itemId);
+}
+
+function setStoreItemName(itemId, newName){
+  
 }
 
 
@@ -128,7 +148,7 @@ function handleFilterItems(){
   });
 }
 
-function handleHideChecked(){
+function handleHideCheckedClicked(){
   $('#js-shopping-list-add-form').on('click', '.js-hide-checked', function(e){
     const isChecked = $('.js-hide-checked').is(':checked');
     setStoreHideChecked(isChecked);
@@ -145,13 +165,38 @@ function handleItemCheckClicked() {
   });
 }
 
+function handleEditItemClicked(){
+  $('.js-shopping-list').on('click', '.js-item-edit', event => {
+    console.log('`handleEditItemNameClicked` ran');
+    const itemId = getItemIndexFromElement(event.currentTarget);
+    toggleEditingForListItem(itemId);
+    renderShoppingList();
+  });
+}
+
+function handleConfirmEditItemClicked(){
+  $('.js-shopping-list').on('submit', '.js-item-name-edit-form', function(event) {
+    event.preventDefault();
+    console.log('`handleConfirmEditItemClicked` ran');
+
+    const updatedItemName = $('.js-item-name-edit-entry').val();
+    const itemId= getItemIndexFromElement(event.currentTarget);
+
+    toggleEditingForListItem(itemId);
+    setStoreItemName(itemId, updatedItemName);
+    renderShoppingList();
+  });
+}
+
 function handleDeleteItemClicked() {
-  $('.shopping-list').on('click', '.shopping-item-delete', function(e){
+  $('.js-shopping-list').on('click', '.shopping-item-delete', function(e){
     const itemId = getItemIndexFromElement(this);
     deleteStoreItemById(itemId);
     renderShoppingList();
   });
 }
+
+
 
 
 
@@ -161,11 +206,12 @@ function handleDeleteItemClicked() {
 // for individual shopping list items.
 function handleShoppingList() {
   renderShoppingList();
+  handleFilterItems();
+  handleHideCheckedClicked();
   handleNewItemSubmit();
   handleItemCheckClicked();
+  handleEditItemClicked();
   handleDeleteItemClicked();
-  handleFilterItems();
-  handleHideChecked();
 }
 
 // when the page loads, call `handleShoppingList`
