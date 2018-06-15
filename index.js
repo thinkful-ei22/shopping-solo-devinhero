@@ -32,10 +32,19 @@ function generateItemElement(item) {
 
 function generateShoppingItemsString(shoppingList) {
   console.log('Generating shopping list element');
+  const filter = $('.js-shopping-list-filter').val();
+  const filterList = filterShoppingItemsArray(shoppingList, filter);
 
-  const items = shoppingList.map((item) => generateItemElement(item));
-  
+  const items = filterList.map((item) => generateItemElement(item));
   return items.join('');
+}
+
+function filterShoppingItemsArray(items, filter){
+  if(filter){
+    return items.filter(item => item.name.indexOf(filter) !== -1);
+  }else{
+    return items;
+  }
 }
 
 
@@ -55,7 +64,7 @@ function addItemToShoppingList(itemName) {
 }
 
 function handleNewItemSubmit() {
-  $('#js-shopping-list-form').submit(function(event) {
+  $('#js-shopping-list-add-form').submit(function(event) {
     event.preventDefault();
     console.log('`handleNewItemSubmit` ran');
     const newItemName = $('.js-shopping-list-entry').val();
@@ -72,7 +81,6 @@ function toggleCheckedForListItem(itemId) {
   item.checked = !item.checked;
 }
 
-
 function getItemIndexFromElement(item) {
   return $(item)
     .closest('.js-item-index-element')
@@ -88,11 +96,16 @@ function handleItemCheckClicked() {
   });
 }
 
-
 function handleDeleteItemClicked() {
   $('.shopping-list').on('click', '.shopping-item-delete', function(e){
     const itemId = getItemIndexFromElement(this);
     deleteItemById(itemId);
+    renderShoppingList();
+  });
+}
+
+function handleFilterItems(){
+  $('.js-shopping-list-filter').on('keyup',  function(e){
     renderShoppingList();
   });
 }
@@ -110,6 +123,7 @@ function handleShoppingList() {
   handleNewItemSubmit();
   handleItemCheckClicked();
   handleDeleteItemClicked();
+  handleFilterItems();
 }
 
 // when the page loads, call `handleShoppingList`
