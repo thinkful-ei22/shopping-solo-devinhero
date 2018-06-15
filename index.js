@@ -26,7 +26,8 @@ function renderShoppingList() {
 
 function generateShoppingItemsString(shoppingList) {
   console.log('Generating shopping list element');
-  const filterList = filterItemsArrayByTerm(shoppingList, STORE.filter);
+  var filterList = filterItemsArrayByTerm(shoppingList, STORE.filter);
+  filterList = filterItemsArrayByChecked(filterList);
 
   const items = filterList.map((item) => generateItemElement(item));
   return items.join('');
@@ -40,8 +41,12 @@ function filterItemsArrayByTerm(items, filter){
   }
 }
 
-function filterItemsArrayByChecked(){
-  
+function filterItemsArrayByChecked(items){
+  if(STORE.hideChecked){
+    return items.filter(item => !item.checked);
+  }else{
+    return items;
+  }
 }
 
 
@@ -111,6 +116,22 @@ function handleNewItemSubmit() {
   });
 }
 
+function handleFilterItems(){
+  $('#js-shopping-list-add-form').on('keyup', '.js-shopping-list-filter', function(e){
+    const filter = $('.js-shopping-list-filter').val();
+    setStoreFilter(filter);
+    renderShoppingList();
+  });
+}
+
+function handleHideChecked(){
+  $('#js-shopping-list-add-form').on('click', '.js-hide-checked', function(e){
+    $('.js-hide-checked');
+    
+    renderShoppingList();
+  });
+}
+
 function handleItemCheckClicked() {
   $('.js-shopping-list').on('click', '.js-item-toggle', event => {
     console.log('`handleItemCheckClicked` ran');
@@ -128,14 +149,6 @@ function handleDeleteItemClicked() {
   });
 }
 
-function handleFilterItems(){
-  $('.js-shopping-list-filter').on('keyup',  function(e){
-    const filter = $('.js-shopping-list-filter').val();
-    setStoreFilter(filter);
-    renderShoppingList();
-  });
-}
-
 
 
 // this function will be our callback when the page loads. it's responsible for
@@ -148,6 +161,7 @@ function handleShoppingList() {
   handleItemCheckClicked();
   handleDeleteItemClicked();
   handleFilterItems();
+  handleHideChecked();
 }
 
 // when the page loads, call `handleShoppingList`
